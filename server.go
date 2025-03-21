@@ -81,7 +81,7 @@ func (s *Server) AddController(c Controller) {
 		return
 	}
 
-	s.logger.Info("added controller correctly", "controller", c.GetPath())
+	s.logger.Info("added controller successfully", "controller", c.GetPath())
 }
 
 func (s *Server) CompileOpenAPI() error {
@@ -102,6 +102,7 @@ func (s *Server) CompileOpenAPI() error {
 func (s *Server) AddSwaggerUI(config swgui.Config) error {
 	ui := v5cdn.NewWithConfig(config)(s.reflector.Spec.Info.Title, "/api/docs/v3.1/openapi.json", "/api/docs")
 	s.mux.Handle("/api/docs", ui)
+	s.logger.Info("added SwaggerUI successfully")
 
 	return nil
 }
