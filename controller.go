@@ -7,13 +7,18 @@ import (
 
 type Controller interface {
 	GetPath() string
-	MakeHandlerFunc(*Server) http.HandlerFunc
+	GetTags() []string
+	GetDescription() string
+
 	RequestSchemaSample() any
 	ResponseSchemaSample() any
+
+	MakeHandlerFunc(*Server) http.HandlerFunc
 }
 
 type Route[Props any, Return any] struct {
 	Path             string // http.ServeMux path (eg. `GET /api/user/{id}`)
+	Tags             []string
 	Description      string
 	PropDescriptions map[string]string // map of Prop names to descriptions
 	Func             func(*Context[Props]) (status int, v *Return, err error)
@@ -26,6 +31,14 @@ type Route[Props any, Return any] struct {
 
 func (r Route[Props, Return]) GetPath() string {
 	return r.Path
+}
+
+func (r Route[Props, Return]) GetTags() []string {
+	return r.Tags
+}
+
+func (r Route[Props, Return]) GetDescription() string {
+	return r.Description
 }
 
 func (r Route[Props, Return]) RequestSchemaSample() any {

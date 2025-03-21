@@ -58,6 +58,8 @@ func (s *Server) AddController(c Controller) {
 		panic(err)
 	}
 
+	ctx.SetTags(c.GetTags()...)
+	ctx.SetDescription(c.GetDescription())
 	ctx.AddReqStructure(c.RequestSchemaSample())
 	ctx.AddRespStructure(c.ResponseSchemaSample())
 

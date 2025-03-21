@@ -48,8 +48,7 @@ func main() {
 		},
 	}
 	routePost := goat.Route[HelloReq, HelloRes]{
-		Path:        "POST /hello/{name}",
-		Description: "hello post",
+		Path: "POST /hello/{name}",
 		Func: func(c *goat.Context[HelloReq]) (int, *HelloRes, error) {
 			return 100, &HelloRes{
 				Name: c.Props.Name,
