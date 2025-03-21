@@ -28,7 +28,7 @@ type HelloBody struct {
 }
 
 type HelloReq struct {
-	Name string `goat:",path" path:"name"`
+	Name string `path:"name"`
 	HelloBody
 }
 

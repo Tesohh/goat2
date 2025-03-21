@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 type fieldBlueprint struct {
@@ -88,7 +87,7 @@ func (b fieldBlueprint) SetField(params reflect.Value, s *Server, r *http.Reques
 	return nil
 }
 
-func compileBlueprints(v any) []fieldBlueprint {
+func compileBlueprints(v any) ([]fieldBlueprint, error) {
 	blueprints := []fieldBlueprint{}
 
 	rv := reflect.ValueOf(v)
@@ -99,30 +98,38 @@ func compileBlueprints(v any) []fieldBlueprint {
 		bp := fieldBlueprint{}
 		field := t.Field(i)
 		bp.FieldName = field.Name
+		bp.Type = field.Type
 
-		tag := field.Tag.Get("goat")
-		tags := strings.Split(tag, ",")
-
-		if len(tags) > 0 && tags[0] != "" {
-			bp.ParamName = tags[0]
+		if field.Type.Kind() == reflect.Struct {
+			bp.GetFrom = "body"
 		} else {
-			bp.ParamName = strings.ToLower(bp.FieldName)
-		}
+			query, queryOk := field.Tag.Lookup("query")
+			path, pathOk := field.Tag.Lookup("path")
 
-		if len(tags) > 1 {
-			bp.GetFrom = tags[1]
-		} else {
-			if field.Type.Kind() == reflect.Struct {
-				bp.GetFrom = "body"
-			} else {
+			if queryOk && pathOk {
+				return nil, fmt.Errorf("cannot have set both `query` and `path` tag on field %s of %s", field.Name, t.Name())
+			} else if !queryOk && !pathOk {
+				return nil, fmt.Errorf("need to set either `query` or `path` tag on field %s of %s", field.Name, t.Name())
+			}
+
+			if queryOk {
+				if query == "" {
+					return nil, fmt.Errorf("tag `query` cannot be empty on field %s of %s", field.Name, t.Name())
+				}
+				bp.ParamName = query
 				bp.GetFrom = "query"
 			}
+			if pathOk {
+				if path == "" {
+					return nil, fmt.Errorf("tag `query` cannot be empty on field %s of %s", field.Name, t.Name())
+				}
+				bp.ParamName = path
+				bp.GetFrom = "path"
+			}
 		}
-
-		bp.Type = field.Type
 
 		blueprints = append(blueprints, bp)
 	}
 
-	return blueprints
+	return blueprints, nil
 }

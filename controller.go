@@ -38,7 +38,11 @@ func (r Route[Props, Return]) ResponseSchemaSample() any {
 
 func (route Route[Props, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 	var sample Props
-	route.blueprints = compileBlueprints(sample)
+	blueprints, err := compileBlueprints(sample)
+	if err != nil {
+		panic(err)
+	}
+	route.blueprints = blueprints
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Reflect (if any blueprints exist)
