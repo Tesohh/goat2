@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"log/slog"
+	"os"
+
 	"github.com/Tesohh/goat"
+	"github.com/lmittmann/tint"
 	"github.com/swaggest/openapi-go/openapi31"
 	"github.com/swaggest/swgui"
 )
@@ -55,12 +60,22 @@ func main() {
 			}, nil
 		},
 	}
+	errorRoute := goat.Route[struct{}, struct{}]{
+		Path: "GET /error",
+		Func: func(c *goat.Context[struct{}]) (int, *struct{}, error) {
+			c.Logger.Info("hi from error route")
+			return 100, &struct{}{}, fmt.Errorf("errorrr")
+		},
+	}
 
 	s := goat.NewServer(openapi31.Info{
 		Title: "Greeter API",
 	})
+	s.SetLogger(slog.New(tint.NewHandler(os.Stderr, nil)))
+
 	s.AddController(route)
 	s.AddController(routePost)
+	s.AddController(errorRoute)
 
 	err := s.CompileOpenAPI()
 	if err != nil {

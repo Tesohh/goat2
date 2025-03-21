@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/lmittmann/tint v1.0.7 // indirect
 	github.com/swaggest/jsonschema-go v0.3.73 // indirect
 	github.com/swaggest/refl v1.3.1 // indirect
 	github.com/swaggest/swgui v1.8.2 // indirect

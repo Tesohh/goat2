@@ -8,7 +8,7 @@ import (
 type ErrorHandlerFunc func(http.ResponseWriter, int, error)
 
 func DefaultErrorHandler(w http.ResponseWriter, status int, err error) {
-	// TODO: improve
+	// TODO: Use JSON here.
 	w.WriteHeader(status)
 	fmt.Fprintf(w, "error: %s", err.Error())
 }

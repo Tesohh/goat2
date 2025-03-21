@@ -68,6 +68,7 @@ func (route Route[Props, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 		for _, b := range route.blueprints {
 			err := b.SetField(reflection, s, r)
 			if err != nil {
+				s.logger.Error("error while parsing fields for", "route", route.Path, "err", err)
 				if route.OverrideErrorHandler != nil {
 					route.OverrideErrorHandler(w, 400, err)
 				} else {
@@ -78,10 +79,11 @@ func (route Route[Props, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {
 		}
 
 		// Run route
-		ctx := Context[Props]{Props: props, Request: r, Writer: w}
+		ctx := Context[Props]{Props: props, Request: r, Writer: w, Logger: s.logger}
 		status, v, err := route.Func(&ctx)
 
 		if err != nil {
+			s.logger.Error("got error from", "route", route.Path, "err", err)
 			if route.OverrideErrorHandler != nil {
 				route.OverrideErrorHandler(w, 400, err)
 			} else {

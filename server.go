@@ -2,6 +2,7 @@ package goat
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -16,6 +17,8 @@ type Server struct {
 
 	reflector *openapi31.Reflector
 
+	logger *slog.Logger
+
 	ErrorHandler ErrorHandlerFunc
 	Encoder      EncoderFunc
 }
@@ -29,9 +32,14 @@ func NewServer(info openapi31.Info) *Server {
 		mux:          http.NewServeMux(),
 		controllers:  make([]Controller, 0),
 		reflector:    reflector,
+		logger:       slog.Default(),
 		ErrorHandler: DefaultErrorHandler,
 		Encoder:      JSONEncoder,
 	}
+}
+
+func (s *Server) SetLogger(logger *slog.Logger) {
+	s.logger = logger
 }
 
 func (s *Server) AddController(c Controller) {
