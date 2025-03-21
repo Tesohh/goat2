@@ -18,24 +18,40 @@ type Person struct {
 // 	World
 // }
 
-type Hello struct {
-	Name   string `goat:",path"`
-	Person `goat:"person"`
+// type Hello struct {
+// 	Name   string `goat:",path" path:"name"`
+// 	Person `goat:"person"`
+// }
+
+type HelloReq struct {
+	Name string `goat:",path" path:"name"`
+}
+
+type HelloRes struct {
+	Name string `json:"name"`
 }
 
 func main() {
-	route := goat.Route[Hello, Hello]{
+	route := goat.Route[HelloReq, HelloRes]{
 		Path:        "/hello/{name}",
 		Description: "hello",
-		Func: func(c *goat.Context[Hello]) (int, *Hello, error) {
-			return 100, &Hello{
-				Name:   c.Props.Name,
-				Person: Person{Name: "Harral"},
+		Func: func(c *goat.Context[HelloReq]) (int, *HelloRes, error) {
+			return 100, &HelloRes{
+				Name: c.Props.Name,
 			}, nil
 		},
 	}
 
-	s := goat.NewServer(openapi31.Info{})
+	s := goat.NewServer(openapi31.Info{
+		Title: "Greeter API",
+	})
 	s.AddController(route)
+
+	err := s.CompileOpenAPI()
+	if err != nil {
+		panic(err)
+	}
+	s.AddSwaggerUI()
+
 	s.Listen(":8080")
 }

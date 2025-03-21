@@ -8,6 +8,8 @@ import (
 type Controller interface {
 	GetPath() string
 	MakeHandlerFunc(*Server) http.HandlerFunc
+	RequestSchemaSample() any
+	ResponseSchemaSample() any
 }
 
 type Route[Props any, Return any] struct {
@@ -24,6 +26,14 @@ type Route[Props any, Return any] struct {
 
 func (r Route[Props, Return]) GetPath() string {
 	return r.Path
+}
+
+func (r Route[Props, Return]) RequestSchemaSample() any {
+	return new(Props)
+}
+
+func (r Route[Props, Return]) ResponseSchemaSample() any {
+	return new(Return)
 }
 
 func (route Route[Props, Return]) MakeHandlerFunc(s *Server) http.HandlerFunc {

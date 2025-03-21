@@ -1,9 +1,12 @@
 package goat
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/swaggest/openapi-go/openapi31"
+	"github.com/swaggest/swgui/v5cdn"
 )
 
 type Server struct {
@@ -33,8 +36,56 @@ func NewServer(info openapi31.Info) *Server {
 func (s *Server) AddController(c Controller) {
 	s.controllers = append(s.controllers, c)
 
-	path := c.GetPath()
-	s.mux.Handle(path, c.MakeHandlerFunc(s))
+	fullPath := c.GetPath()
+	s.mux.Handle(fullPath, c.MakeHandlerFunc(s))
+
+	parts := strings.Fields(fullPath)
+	method := ""
+	path := ""
+	if len(parts) == 1 {
+		method = "GET"
+		path = parts[0]
+	} else if len(parts) == 2 {
+		method = parts[0]
+		path = parts[1]
+	} else {
+		panic(fmt.Sprintf("unable to correctly split parts of %s. Can have 1 or 2 parts (method and path)", fullPath)) // TODO: switch to slogging
+	}
+
+	ctx, err := s.reflector.NewOperationContext(method, path)
+	if err != nil {
+		panic(err)
+	}
+
+	ctx.AddReqStructure(c.RequestSchemaSample())
+	ctx.AddRespStructure(c.ResponseSchemaSample())
+
+	err = s.reflector.AddOperation(ctx)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (s *Server) CompileOpenAPI() error {
+	b, err := s.reflector.Spec.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	s.mux.HandleFunc("/api/docs/v3.1/openapi.json", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+		w.Write(b)
+	})
+
+	return nil
+}
+
+// NOTE: you must have run Server.CompileOpenAPI beforehand.
+func (s *Server) AddSwaggerUI() error {
+	ui := v5cdn.New(s.reflector.Spec.Info.Title, "/api/docs/v3.1/openapi.json", "/api/docs")
+	s.mux.Handle("/api/docs", ui)
+
+	return nil
 }
 
 func (s *Server) Listen(addr string) {
