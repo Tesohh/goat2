@@ -19,18 +19,18 @@ type Person struct {
 // }
 
 type Hello struct {
-	Name string `goat:",path"`
-	Person
+	Name   string `goat:",path"`
+	Person `goat:"person"`
 }
 
 func main() {
 	route := goat.Route[Hello, Hello]{
 		Path:        "/hello/{name}",
 		Description: "hello",
-		Func: func(*goat.Context[Hello]) (int, *Hello, error) {
+		Func: func(c *goat.Context[Hello]) (int, *Hello, error) {
 			return 100, &Hello{
-				Name:   "AIOEIOFJIOJWEOFJ",
-				Person: Person{Name: "TESTING"},
+				Name:   c.Props.Name,
+				Person: Person{Name: "Harral"},
 			}, nil
 		},
 	}

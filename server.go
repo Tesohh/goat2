@@ -10,19 +10,23 @@ type Server struct {
 	mux         *http.ServeMux
 	controllers []Controller
 
+	reflector *openapi31.Reflector
+
 	ErrorHandler ErrorHandlerFunc
 	Encoder      EncoderFunc
-	Info         openapi31.Info
 }
 
 // Returns a new pointer to a server, with the goat.DefaultErrorHandler and a goat.JSONEncoder.
 func NewServer(info openapi31.Info) *Server {
+	reflector := openapi31.NewReflector()
+	reflector.Spec.Info = info
+
 	return &Server{
 		mux:          http.NewServeMux(),
 		controllers:  make([]Controller, 0),
+		reflector:    reflector,
 		ErrorHandler: DefaultErrorHandler,
 		Encoder:      JSONEncoder,
-		Info:         info,
 	}
 }
 
