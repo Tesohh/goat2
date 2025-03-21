@@ -1,7 +1,6 @@
 package goat
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -58,12 +57,16 @@ func (s *Server) AddController(c Controller) {
 		method = parts[0]
 		path = parts[1]
 	} else {
-		panic(fmt.Sprintf("unable to correctly split parts of %s. Can have 1 or 2 parts (method and path)", fullPath)) // TODO: switch to slogging
+		s.logger.Error("unable to correctly split parts of controller. Can have 1 or 2 parts (method and path)", "controller", fullPath)
+		s.logger.Warn("this controller will still work, but will not show up in OpenAPI", "controller", c.GetPath())
+		return
 	}
 
 	ctx, err := s.reflector.NewOperationContext(method, path)
 	if err != nil {
-		panic(err)
+		s.logger.Error("got error while making operation context", "controller", fullPath, "err", err)
+		s.logger.Warn("this controller will still work, but will not show up in OpenAPI", "controller", c.GetPath())
+		return
 	}
 
 	ctx.SetTags(c.GetTags()...)
@@ -73,8 +76,12 @@ func (s *Server) AddController(c Controller) {
 
 	err = s.reflector.AddOperation(ctx)
 	if err != nil {
-		panic(err)
+		s.logger.Error("got error while adding controller of", "controller", fullPath, "err", err)
+		s.logger.Warn("this controller will still work, but will not show up in OpenAPI", "controller", c.GetPath())
+		return
 	}
+
+	s.logger.Info("added controller correctly", "controller", c.GetPath())
 }
 
 func (s *Server) CompileOpenAPI() error {
@@ -100,5 +107,6 @@ func (s *Server) AddSwaggerUI(config swgui.Config) error {
 }
 
 func (s *Server) Listen(addr string) {
+	s.logger.Info("server listening", "addr", addr)
 	http.ListenAndServe(addr, s.mux)
 }
