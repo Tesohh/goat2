@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/swaggest/openapi-go/openapi31"
+	"github.com/swaggest/swgui"
 	"github.com/swaggest/swgui/v5cdn"
 )
 
@@ -81,8 +82,8 @@ func (s *Server) CompileOpenAPI() error {
 }
 
 // NOTE: you must have run Server.CompileOpenAPI beforehand.
-func (s *Server) AddSwaggerUI() error {
-	ui := v5cdn.New(s.reflector.Spec.Info.Title, "/api/docs/v3.1/openapi.json", "/api/docs")
+func (s *Server) AddSwaggerUI(config swgui.Config) error {
+	ui := v5cdn.NewWithConfig(config)(s.reflector.Spec.Info.Title, "/api/docs/v3.1/openapi.json", "/api/docs")
 	s.mux.Handle("/api/docs", ui)
 
 	return nil

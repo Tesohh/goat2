@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Tesohh/goat"
 	"github.com/swaggest/openapi-go/openapi31"
+	"github.com/swaggest/swgui"
 )
 
 type Person struct {
@@ -66,7 +67,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s.AddSwaggerUI()
+
+	config := swgui.Config{
+		SettingsUI: map[string]string{
+			"tryItOutEnabled": "true",
+		},
+	}
+
+	s.AddSwaggerUI(config)
 
 	s.Listen(":8080")
 }
