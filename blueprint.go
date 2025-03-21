@@ -39,21 +39,6 @@ func (b fieldBlueprint) Cast(s string) (any, error) {
 	return reflect.Zero(b.Type).Interface(), fmt.Errorf("cannot cast from string to %s", b.Type.Kind())
 }
 
-// // TODO: Also check if the server has this type already defined in it's schemas, and if that's the case then use that as a $ref
-// func (b fieldBlueprint) AsOpenAPIParameter(description *string) openapi31.Parameter {
-// 	return openapi31.Parameter{
-// 		Name:        b.ParamName,
-// 		In:          openapi31.ParameterIn(b.GetFrom), // WARN: In doesn't include body!
-// 		Description: description,
-// 		Required:    new(bool), // TODO: add optional and required prameters
-// 		Deprecated:  new(bool), // TODO: add deprecation
-// 		Schema:      schema,
-// 		Content:     map[string]openapi31.MediaType{},
-// 		Style:       &"",
-// 		Example:     &nil,
-// 	}
-// }
-
 func (b fieldBlueprint) SetField(params reflect.Value, s *Server, r *http.Request) error {
 	field := params.FieldByName(b.FieldName)
 

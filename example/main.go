@@ -23,8 +23,13 @@ type Person struct {
 // 	Person `goat:"person"`
 // }
 
+type HelloBody struct {
+	ID string `json:"id"`
+}
+
 type HelloReq struct {
 	Name string `goat:",path" path:"name"`
+	HelloBody
 }
 
 type HelloRes struct {
@@ -41,11 +46,21 @@ func main() {
 			}, nil
 		},
 	}
+	routePost := goat.Route[HelloReq, HelloRes]{
+		Path:        "POST /hello/{name}",
+		Description: "hello post",
+		Func: func(c *goat.Context[HelloReq]) (int, *HelloRes, error) {
+			return 100, &HelloRes{
+				Name: c.Props.Name,
+			}, nil
+		},
+	}
 
 	s := goat.NewServer(openapi31.Info{
 		Title: "Greeter API",
 	})
 	s.AddController(route)
+	s.AddController(routePost)
 
 	err := s.CompileOpenAPI()
 	if err != nil {
